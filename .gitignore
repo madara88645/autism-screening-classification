@@ -8,3 +8,4 @@ mlruns/
 models/*.joblib
 outputs/*.json
 outputs/*.ipynb
+.local/

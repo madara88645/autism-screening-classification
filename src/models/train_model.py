@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
+from sklearn.dummy import DummyClassifier
 
 from src.config import N_ESTIMATORS, RANDOM_STATE
 
@@ -11,6 +12,11 @@ def build_model(
     return RandomForestClassifier(
         n_estimators=n_estimators,
         random_state=random_state,
+    )
+
+def build_dummy_model(strategy: str = "most_frequent") -> DummyClassifier:
+    return DummyClassifier(
+        strategy=strategy
     )
 
 
