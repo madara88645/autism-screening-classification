@@ -1,6 +1,8 @@
 # Autism Screening Classification
 
-A clean, beginner-friendly machine learning project that predicts autism screening outcomes from questionnaire and demographic features.
+A beginner-friendly machine learning and MLOps practice project that predicts an autism screening label from questionnaire and demographic features.
+
+This project is not intended for medical diagnosis. The goal is to demonstrate a clean ML workflow using a simple tabular screening dataset, including preprocessing, model training, evaluation, artifact saving, and MLflow experiment tracking.
 
 This repository started as a Kaggle notebook and was refactored into a more structured, GitHub-ready project with reusable Python modules, a training script, a portfolio notebook, local model saving, and MLflow experiment tracking.
 
@@ -21,7 +23,7 @@ It is intentionally not presented as a production system. The goal is clarity, r
 
 Build an end-to-end binary classification pipeline that predicts the `Class/ASD` label from the `Autism.csv` dataset while keeping the code easy to read, easy to run, and suitable for a public portfolio.
 
-## Dataset
+## Dataset and Cleaning Decisions
 
 - File: `data/Autism.csv`
 - Target column: `Class/ASD`
@@ -29,10 +31,14 @@ Build an end-to-end binary classification pipeline that predicts the `Class/ASD`
 
 Notes:
 
-- The raw CSV is stored unchanged in the repository.
-- Data cleaning happens in code for reproducibility.
-- The original dataset column name `contry_of_res` is preserved to match the source data exactly.
-- The `age_desc` column is dropped during preprocessing because it is constant and does not add useful signal.
+* The raw CSV file is kept unchanged in the repository so the original source format is preserved.
+* Missing values represented as `?` are treated as missing data and handled during preprocessing.
+* Text values are cleaned by removing unnecessary quotes and extra whitespace.
+* Numeric missing values are imputed using the median, while categorical missing values are imputed using the most frequent value.
+* Categorical features are one-hot encoded so they can be used by scikit-learn models.
+* The target column `Class/ASD` is mapped from `NO/YES` values to `0/1`.
+* The original column name `contry_of_res` is preserved to stay consistent with the source dataset.
+* The `age_desc` column is dropped because it is constant and does not add useful predictive signal.
 
 ## What The Notebook Is For
 
@@ -56,7 +62,7 @@ The notebook reuses the same helper functions as `train.py`, so the notebook and
 ## Repository Structure
 
 ```text
-autismmlops/
+autism-screening-classification/
 |- data/
 |  |- Autism.csv
 |- models/
@@ -111,6 +117,42 @@ autismmlops/
 10. save the trained pipeline and metrics locally
 11. log parameters, metrics, and model artifacts to MLflow
 
+## Why RandomForestClassifier?
+
+RandomForestClassifier was chosen as a strong and practical first baseline for this tabular classification task.
+
+It works well with mixed numeric and one-hot encoded categorical features, does not require heavy feature scaling, and is more stable than a single decision tree because it combines multiple trees.
+
+This choice is not meant to claim that Random Forest is the best possible model. The goal is to use a reliable baseline model while focusing on the full ML and MLOps workflow.
+
+## Evaluation and Baseline Comparison
+
+The model is evaluated with accuracy, precision, recall, and f1 score.
+
+Accuracy alone can be misleading on an imbalanced dataset because a model can achieve a reasonable score by mostly predicting the majority class. For this reason, precision, recall, and f1 are also used to better understand performance on both classes.
+
+The main training script trains and logs the `RandomForestClassifier` pipeline. The portfolio notebook includes an additional `DummyClassifier` with the `most_frequent` strategy as a naive majority-class baseline.
+
+This notebook-only baseline comparison helps interpret the Random Forest results more honestly by showing whether the model is only relying on class imbalance or whether it appears to learn useful feature signals.
+
+## Dataset Limitations
+
+This dataset is small and limited, so the results should be interpreted carefully.
+
+The target class is imbalanced, which means accuracy alone may give an overly optimistic view of performance.
+
+The dataset may not represent all demographic groups equally, so the model may not generalize well to real-world populations.
+
+Near-perfect performance on this dataset does not prove real-world robustness or clinical reliability. The dataset may be relatively easy, limited in diversity, or contain very strong predictive signals. Potential leakage cannot be fully ruled out without deeper validation.
+
+## What This Project Is Not
+
+This project is not a medical diagnosis tool and should not be used to make clinical decisions.
+
+It is not a production machine learning system, and it does not include deployment, API serving, monitoring, or clinical validation.
+
+The results in this repository should be interpreted as a portfolio-level machine learning workflow, not as evidence of real-world medical reliability or robustness.
+
 ## Setup
 
 Create and activate a virtual environment:
@@ -138,6 +180,8 @@ This will create:
 This project supports optional remote MLflow tracking with DagsHub.
 
 Set these environment variables before running the training script:
+
+The example below uses PowerShell. On macOS/Linux, use your shell’s environment variable syntax.
 
 ```powershell
 $env:DAGSHUB_REPO_OWNER="<your-owner>"
@@ -195,6 +239,9 @@ It does not include:
 - orchestration tools
 - advanced feature engineering
 - hyperparameter tuning workflows
+- medical diagnosis
+- clinical validation
+- real-world healthcare decision making
 
 ## License
 
