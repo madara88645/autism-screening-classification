@@ -48,6 +48,12 @@ def main() -> None:
     trained_pipeline = train_pipeline(pipeline, X_train, y_train)
 
     metrics = evaluate_model(trained_pipeline, X_test, y_test)
+    metrics["confusion_matrix"] = get_confusion_matrix(trained_pipeline, X_test, y_test)
+    mlflow_metrics = {
+        name: value
+        for name, value in metrics.items()
+        if isinstance(value, int | float)
+    }
 
     joblib.dump(trained_pipeline, MODEL_OUTPUT_PATH)
     save_metrics(metrics, METRICS_OUTPUT_PATH)
@@ -62,19 +68,20 @@ def main() -> None:
             "test_size": TEST_SIZE,
             "target_column": TARGET_COLUMN,
         },
-        metrics=metrics,
+        metrics=mlflow_metrics,
     )
 
     print(f"Tracking URI: {tracking_uri}")
     print(f"MLflow run ID: {run_id}")
     print("Evaluation metrics:")
     for name, value in metrics.items():
-        print(f"  {name}: {value:.4f}")
+        if isinstance(value, dict):
+            print(f"  {name}: {value}")
+        else:
+            print(f"  {name}: {value:.4f}")
     print(f"Saved model: {MODEL_OUTPUT_PATH}")
     print(f"Saved metrics: {METRICS_OUTPUT_PATH}")
 
-    print("Confusion Matrix for Random Forest:")
-    print(get_confusion_matrix(trained_pipeline, X_test, y_test))
 
 if __name__ == "__main__":
     main()
