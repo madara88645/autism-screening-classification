@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from pathlib import Path
 
 import joblib
@@ -49,15 +50,17 @@ def main() -> None:
 
     metrics = evaluate_model(trained_pipeline, X_test, y_test)
     metrics["confusion_matrix"] = get_confusion_matrix(trained_pipeline, X_test, y_test)
+    metrics["model_type"] = model.__class__.__name__
+    metrics["test_size"] = TEST_SIZE
+    metrics["timestamp"] = datetime.now().isoformat()
+    metrics["random_state"] = RANDOM_STATE
+    metrics["n_estimators"] = N_ESTIMATORS
+    metrics["test_samples"] = len(X_test)
     mlflow_metrics = {
         name: value
         for name, value in metrics.items()
         if isinstance(value, int | float)
     }
-
-    joblib.dump(trained_pipeline, MODEL_OUTPUT_PATH)
-    save_metrics(metrics, METRICS_OUTPUT_PATH)
-
     tracking_uri = configure_mlflow(EXPERIMENT_NAME)
     run_id = log_training_run(
         trained_pipeline,
@@ -70,15 +73,20 @@ def main() -> None:
         },
         metrics=mlflow_metrics,
     )
+    metrics["run_id"] = run_id
+    metrics["tracking_uri"] = tracking_uri
+
+    joblib.dump(trained_pipeline, MODEL_OUTPUT_PATH)
+    save_metrics(metrics, METRICS_OUTPUT_PATH)
 
     print(f"Tracking URI: {tracking_uri}")
     print(f"MLflow run ID: {run_id}")
     print("Evaluation metrics:")
     for name, value in metrics.items():
-        if isinstance(value, dict):
-            print(f"  {name}: {value}")
-        else:
+        if isinstance(value, (int, float)):
             print(f"  {name}: {value:.4f}")
+        else:
+            print(f"  {name}: {value}")
     print(f"Saved model: {MODEL_OUTPUT_PATH}")
     print(f"Saved metrics: {METRICS_OUTPUT_PATH}")
 
