@@ -75,20 +75,32 @@ def main() -> None:
     )
     metrics["run_id"] = run_id
     metrics["tracking_uri"] = tracking_uri
+    metrics["experiment_name"] = EXPERIMENT_NAME
+    metrics["saved_model"] = str(MODEL_OUTPUT_PATH)
+    metrics["saved_metrics"] = str(METRICS_OUTPUT_PATH)
+
+    eval_keys = ["accuracy", "precision", "recall", "f1","confusion_matrix"]
+    config_keys = ["model_type", "n_estimators", "random_state", "test_size", "test_samples"]
+    artifact_keys = ["run_id", "tracking_uri","timestamp","experiment_name","saved_model","saved_metrics"]
 
     joblib.dump(trained_pipeline, MODEL_OUTPUT_PATH)
     save_metrics(metrics, METRICS_OUTPUT_PATH)
 
-    print(f"Tracking URI: {tracking_uri}")
-    print(f"MLflow run ID: {run_id}")
     print("Evaluation metrics:")
-    for name, value in metrics.items():
-        if isinstance(value, (int, float)):
-            print(f"  {name}: {value:.4f}")
+    for key in eval_keys:
+        if key == "confusion_matrix":
+            print(f"true negatives: {metrics[key]['tn']}\nfalse positives: {metrics[key]['fp']}\nfalse negatives: {metrics[key]['fn']}\ntrue positives: {metrics[key]['tp']}")
         else:
-            print(f"  {name}: {value}")
-    print(f"Saved model: {MODEL_OUTPUT_PATH}")
-    print(f"Saved metrics: {METRICS_OUTPUT_PATH}")
+            print(f"{key}: {metrics[key]:.4f}")
+    print("\n")
+    print("Configuration parameters:")
+    for key in config_keys:
+        print(f"{key}: {metrics[key]}")
+    print("\n")
+    print("Artifacts:")
+    for key in artifact_keys:
+        print(f"{key}: {metrics[key]}")
+
 
 
 if __name__ == "__main__":
