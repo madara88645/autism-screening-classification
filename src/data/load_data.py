@@ -47,7 +47,11 @@ def clean_raw_dataframe(df: pd.DataFrame) -> pd.DataFrame:
             cleaned[column] = pd.to_numeric(cleaned[column], errors="coerce")
 
     if TARGET_COLUMN in cleaned.columns:
-        cleaned[TARGET_COLUMN] = cleaned[TARGET_COLUMN].map({"NO": 0, "YES": 1}).astype(int)
+        target_mapping = {"NO": 0, "YES": 1}
+        unexpected_values = set(cleaned[TARGET_COLUMN].dropna()) - set(target_mapping)
+        if unexpected_values:
+            raise ValueError(f"Unexpected target values: {unexpected_values}")
+        cleaned[TARGET_COLUMN] = cleaned[TARGET_COLUMN].map(target_mapping).astype(int)
 
     return cleaned
 
@@ -55,4 +59,3 @@ def clean_raw_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 def load_dataset(data_path: Path | str = DATA_PATH) -> pd.DataFrame:
     dataframe = pd.read_csv(data_path)
     return clean_raw_dataframe(dataframe)
-
