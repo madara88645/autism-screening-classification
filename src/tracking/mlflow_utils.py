@@ -12,10 +12,25 @@ def configure_mlflow(experiment_name: str = EXPERIMENT_NAME) -> str:
     username = os.getenv("DAGSHUB_USERNAME")
     token = os.getenv("DAGSHUB_TOKEN")
 
-    if all([repo_owner, repo_name, username, token]):
+    dagshub_env_vars = {
+        "DAGSHUB_REPO_OWNER": repo_owner,
+        "DAGSHUB_REPO_NAME": repo_name,
+        "DAGSHUB_USERNAME": username,
+        "DAGSHUB_TOKEN": token,
+    }
+
+    if all(dagshub_env_vars.values()):
         tracking_uri = f"https://dagshub.com/{repo_owner}/{repo_name}.mlflow"
         os.environ["MLFLOW_TRACKING_USERNAME"] = username
         os.environ["MLFLOW_TRACKING_PASSWORD"] = token
+    elif any(dagshub_env_vars.values()):
+        missing_values = [
+            name for name, value in dagshub_env_vars.items() if not value
+        ]
+        raise ValueError(
+            "Partial DagsHub configuration detected. "
+            f"Missing environment variables: {missing_values}"
+        )
     else:
         tracking_uri = LOCAL_MLFLOW_URI
         os.environ.setdefault("MLFLOW_ALLOW_FILE_STORE", "true")
