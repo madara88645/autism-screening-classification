@@ -7,6 +7,7 @@ from src.evaluation.metrics import evaluate_model
 from src.features.preprocessing import build_preprocessor, split_features_target
 from src.models.train_model import build_model, build_pipeline, train_pipeline
 from src.tracking.mlflow_utils import configure_mlflow
+from train import get_mlflow_metrics
 
 
 def test_clean_raw_dataframe_handles_missing_quotes_and_target_mapping():
@@ -62,3 +63,18 @@ def test_configure_mlflow_uses_file_uri_without_dagshub_credentials(monkeypatch)
     tracking_uri = configure_mlflow()
 
     assert tracking_uri.startswith("file:///")
+
+
+
+def test_get_mlflow_metrics_returns_only_numeric_values():
+    metrics = {
+        "accuracy": 0.9,
+        "test_samples": 100,
+        "confusion_matrix": {"tn": 1},
+        "model_type": "RandomForestClassifier",
+    }
+
+    assert get_mlflow_metrics(metrics) == {
+        "accuracy": 0.9,
+        "test_samples": 100,
+    }
