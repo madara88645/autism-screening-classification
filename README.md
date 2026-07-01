@@ -82,7 +82,11 @@ autism-screening-classification/
 |  |- tracking/
 |     |- mlflow_utils.py
 |- tests/
+|  |- test_data_loading.py
+|  |- test_evaluation.py
 |  |- test_pipeline.py
+|  |- test_tracking.py
+|  |- test_train_helpers.py
 |- .gitignore
 |- LICENSE
 |- README.md
@@ -127,7 +131,7 @@ This choice is not meant to claim that Random Forest is the best possible model.
 
 ## Evaluation and Baseline Comparison
 
-The model is evaluated with accuracy, precision, recall, and f1 score.
+The model is evaluated with accuracy, precision, recall, f1 score and training also saves a confusion matrix with tn/fp/fn/tp values.
 
 Accuracy alone can be misleading on an imbalanced dataset because a model can achieve a reasonable score by mostly predicting the majority class. For this reason, precision, recall, and f1 are also used to better understand performance on both classes.
 
@@ -169,11 +173,22 @@ pip install -r requirements.txt
 python train.py
 ```
 
-This will create:
+This trains the pipeline, saves local artifacts, and creates an MLflow run.
+
+## Saved Outputs
+
+Running `python train.py` creates:
 
 - `models/autism_rf_pipeline.joblib`
 - `outputs/metrics.json`
 - a local MLflow run in `mlruns/` if DagsHub credentials are not set
+
+The `metrics.json` file includes:
+
+- evaluation metrics: accuracy, precision, recall, f1
+- confusion matrix values: tn, fp, fn, tp
+- model/config metadata: model type, test size, random state, number of estimators, test sample count
+- run/artifact metadata: timestamp, MLflow run ID, tracking URI, experiment name, saved model path, saved metrics path
 
 ## Connect DagsHub MLflow
 
@@ -194,13 +209,22 @@ python train.py
 Behavior:
 
 - If all four variables are available, MLflow uses `https://dagshub.com/<owner>/<repo>.mlflow`
-- If they are missing, the project falls back to local tracking
+- If none of the DagsHub variables are set, the project falls back to local MLflow tracking
+- If only some DagsHub variables are set, the project raises a clear error instead of silently falling back to local tracking
 
 ## Run Tests
 
 ```powershell
 pytest -q
 ```
+
+The tests are organized by responsibility:
+
+- `tests/test_pipeline.py` checks the main pipeline-level behavior.
+- `tests/test_data_loading.py` checks raw data cleaning decisions such as missing values, quote/whitespace cleanup, target mapping, and unexpected target labels.
+- `tests/test_evaluation.py` checks evaluation helper contracts, including metric keys and confusion matrix values.
+- `tests/test_tracking.py` checks MLflow/DagsHub tracking configuration behavior without making real network calls.
+- `tests/test_train_helpers.py` checks helper functions used by `train.py`, such as filtering numeric MLflow metrics and building the metrics report.
 
 ## Open The Notebook
 
