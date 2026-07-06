@@ -7,6 +7,7 @@ from src.evaluation.metrics import evaluate_model
 from src.features.preprocessing import build_preprocessor, split_features_target
 from src.models.train_model import build_model, build_pipeline, train_pipeline
 from src.tracking.mlflow_utils import configure_mlflow
+
 def test_clean_raw_dataframe_handles_missing_quotes_and_target_mapping():
     raw = pd.DataFrame(
         {
@@ -60,6 +61,3 @@ def test_configure_mlflow_uses_file_uri_without_dagshub_credentials(monkeypatch)
     tracking_uri = configure_mlflow()
 
     assert tracking_uri.startswith("file:///")
-
-
-

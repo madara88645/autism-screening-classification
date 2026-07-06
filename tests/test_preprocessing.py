@@ -1,10 +1,10 @@
 import pandas as pd
-
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+
+from src.config import RANDOM_STATE, TEST_SIZE
 from src.features.preprocessing import build_preprocessor
 from src.models.train_model import build_model, build_pipeline, train_pipeline
-from src.config import RANDOM_STATE, TEST_SIZE
-from sklearn.preprocessing import OneHotEncoder
 
 
 def test_build_preprocessor_splits_numeric_and_categorical_columns():
@@ -64,7 +64,6 @@ def test_build_preprocessor_uses_expected_imputation_and_encoding_steps():
     preprocessor = build_preprocessor(df)
 
     names = [t[0] for t in preprocessor.transformers]
-    
     imputer_numeric = preprocessor.transformers[0][1].named_steps["imputer"]
     imputer_categorical = preprocessor.transformers[1][1].named_steps["imputer"]
 
