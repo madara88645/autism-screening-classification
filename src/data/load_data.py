@@ -48,9 +48,18 @@ def clean_raw_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     if TARGET_COLUMN in cleaned.columns:
         target_mapping = {"NO": 0, "YES": 1}
-        unexpected_values = set(cleaned[TARGET_COLUMN].dropna()) - set(target_mapping)
+        expected = set(target_mapping)
+        actual = set(cleaned[TARGET_COLUMN].dropna())
+        unexpected_values = sorted(actual - expected)
         if unexpected_values:
-            raise ValueError(f"Unexpected target values: {unexpected_values}")
+            unexpected_values_text = ", ".join(unexpected_values)
+            expected_values_text = ", ".join(sorted(expected))
+            raise ValueError(
+                "Unexpected target values: "
+                f"{unexpected_values_text}. "
+                "Expected target values: "
+                f"{expected_values_text}."
+            )
         cleaned[TARGET_COLUMN] = cleaned[TARGET_COLUMN].map(target_mapping).astype(int)
 
     return cleaned

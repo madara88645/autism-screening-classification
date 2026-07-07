@@ -39,5 +39,7 @@ def test_clean_raw_dataframe_raises_error_for_unexpected_target_values():
     except ValueError as error:
         assert "Unexpected target values" in str(error)
         assert "MAYBE" in str(error)
+        assert "Expected target values" in str(error)
+        assert "NO, YES" in str(error)
     else:
         raise AssertionError("Expected ValueError for unexpected target values")
