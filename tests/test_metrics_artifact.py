@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from train import add_artifact_info, build_metrics_report
 
 from src.config import (
@@ -76,3 +78,4 @@ def test_metrics_artifact_contains_expected_evaluation_config_and_run_metadata()
     assert metrics["saved_model"] == str(MODEL_OUTPUT_PATH)
     assert metrics["saved_metrics"] == str(METRICS_OUTPUT_PATH)
     assert isinstance(metrics["timestamp"], str)
+    assert datetime.fromisoformat(metrics["timestamp"])
