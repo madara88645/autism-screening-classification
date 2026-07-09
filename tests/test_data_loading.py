@@ -5,9 +5,16 @@ from src.data.load_data import _clean_text_value, clean_raw_dataframe
 
 def test_clean_text_value_normalizes_quoted_or_empty_strings():
     assert _clean_text_value("   'YES'   ") == "YES"
+    assert _clean_text_value(' NO ') == "NO"
+    assert _clean_text_value(" TEST") == "TEST"
+    assert _clean_text_value("lowercase   ") == "lowercase"
     assert pd.isna(_clean_text_value("  "))
     assert pd.isna(_clean_text_value("  ' '  "))
     assert _clean_text_value(15) == 15
+    assert _clean_text_value(True) is True
+    assert _clean_text_value(False) is False
+    assert _clean_text_value(0.1) == 0.1
+    assert _clean_text_value(("hello",1)) == ("hello",1)
 
 
 def test_clean_raw_dataframe_normalizes_text_columns_and_maps_target_labels():
