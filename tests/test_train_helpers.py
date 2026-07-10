@@ -1,5 +1,12 @@
-from src.config import N_ESTIMATORS, RANDOM_STATE, TEST_SIZE
-from train import build_metrics_report, get_mlflow_metrics
+from src.config import (
+    EXPERIMENT_NAME,
+    METRICS_OUTPUT_PATH,
+    MODEL_OUTPUT_PATH,
+    N_ESTIMATORS,
+    RANDOM_STATE,
+    TEST_SIZE,
+)
+from train import build_metrics_report, get_mlflow_metrics, add_artifact_info
 
 
 class FakeModel:
@@ -44,3 +51,22 @@ def test_get_mlflow_metrics_returns_only_numeric_values():
         "accuracy": 0.9,
         "test_samples": 100,
     }
+
+
+def test_add_artifact_info():
+    metrics = {}
+    metrics["accuracy"] = 0.9
+    metrics["precision"] = 0.8
+    metrics["recall"] = 0.7
+    metrics["f1"] = 0.75
+
+    run_id = "mock_run_id"
+    tracking_uri = "file:///tmp/mlruns"
+
+    metrics = add_artifact_info(metrics, run_id=run_id, tracking_uri=tracking_uri)
+
+    assert metrics["run_id"] == "mock_run_id"
+    assert metrics["tracking_uri"] == "file:///tmp/mlruns"
+    assert metrics["experiment_name"] == str(EXPERIMENT_NAME)
+    assert metrics["saved_model"] == str(MODEL_OUTPUT_PATH)
+    assert metrics["saved_metrics"] == str(METRICS_OUTPUT_PATH)
