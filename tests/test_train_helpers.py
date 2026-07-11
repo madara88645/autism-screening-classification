@@ -6,8 +6,12 @@ from src.config import (
     RANDOM_STATE,
     TEST_SIZE,
 )
-from train import build_metrics_report, get_mlflow_metrics, add_artifact_info
-
+from train import (
+    add_artifact_info,
+    build_metrics_report,
+    get_mlflow_metrics,
+    print_training_summary,
+)
 
 class FakeModel:
     pass
@@ -70,3 +74,43 @@ def test_add_artifact_info():
     assert metrics["experiment_name"] == str(EXPERIMENT_NAME)
     assert metrics["saved_model"] == str(MODEL_OUTPUT_PATH)
     assert metrics["saved_metrics"] == str(METRICS_OUTPUT_PATH)
+
+
+def test_print_training_summary(capsys):
+    metrics = {
+        "accuracy": 0.9,
+        "precision": 0.85,
+        "recall": 0.8,
+        "f1": 0.82,
+        "confusion_matrix": {
+            "tn": 45,
+            "fp": 5,
+            "fn": 10,
+            "tp": 40,
+        },
+        "model_type": "RandomForestClassifier",
+        "n_estimators": N_ESTIMATORS,
+        "random_state": RANDOM_STATE,
+        "test_size": TEST_SIZE,
+        "test_samples": 100,
+        "run_id": "mock_run_id",
+        "tracking_uri": "file:///tmp/mlruns",
+        "timestamp": "2026-07-11T08:00:00",
+        "experiment_name": str(EXPERIMENT_NAME),
+        "saved_model": str(MODEL_OUTPUT_PATH),
+        "saved_metrics": str(METRICS_OUTPUT_PATH),
+    }
+
+    print_training_summary(metrics=metrics)
+    captured = capsys.readouterr()
+
+    assert "Evaluation metrics:" in captured.out
+    assert "true negatives: 45" in captured.out
+    assert "false positives: 5" in captured.out
+    assert "false negatives: 10" in captured.out
+    assert "true positives: 40" in captured.out
+    assert "Configuration parameters:" in captured.out
+    assert "Artifacts:" in captured.out
+    assert "run_id" in captured.out
+    assert "saved_model" in captured.out
+    assert "tracking_uri" in captured.out
