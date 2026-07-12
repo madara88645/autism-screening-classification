@@ -1,3 +1,5 @@
+import json
+
 from src.config import (
     EXPERIMENT_NAME,
     METRICS_OUTPUT_PATH,
@@ -11,7 +13,9 @@ from train import (
     build_metrics_report,
     get_mlflow_metrics,
     print_training_summary,
+    save_metrics,
 )
+
 
 class FakeModel:
     pass
@@ -114,3 +118,22 @@ def test_print_training_summary(capsys):
     assert "run_id" in captured.out
     assert "saved_model" in captured.out
     assert "tracking_uri" in captured.out
+
+
+def test_save_metrics(tmp_path):
+    output_path = tmp_path / "nested" / "outputs" / "metrics.json"
+
+    metrics = {
+        "accuracy": 0.9,
+        "test_samples": 100,
+        "confusion_matrix": {"tn": 1},
+        "model_type": "RandomForestClassifier",
+    }
+
+    save_metrics(metrics, output_path)
+
+    with open(output_path, "r", encoding="utf-8") as f:
+        loaded_metrics = json.load(f)
+
+    assert output_path.parent.exists()
+    assert loaded_metrics == metrics
