@@ -49,7 +49,7 @@ def get_mlflow_metrics(metrics: dict) -> dict:
     return {
         name: value
         for name, value in metrics.items()
-        if isinstance(value, int | float)
+        if isinstance(value, int | float) and not isinstance(value, bool)
     }
 
 
