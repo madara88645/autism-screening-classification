@@ -53,12 +53,14 @@ def test_get_mlflow_metrics_returns_only_numeric_values():
         "test_samples": 100,
         "confusion_matrix": {"tn": 1},
         "model_type": "RandomForestClassifier",
+        "model_tree_based": True,
     }
 
     assert get_mlflow_metrics(metrics) == {
         "accuracy": 0.9,
         "test_samples": 100,
     }
+    assert "model_tree_based" not in get_mlflow_metrics(metrics)
 
 
 def test_add_artifact_info():

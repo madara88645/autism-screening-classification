@@ -1,10 +1,10 @@
 import os
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from src.config import LOCAL_MLFLOW_URI
-from src.tracking.mlflow_utils import configure_mlflow
+from src.tracking.mlflow_utils import configure_mlflow, log_training_run
 
 
 def test_configure_mlflow_uses_dagshub_when_all_env_vars_are_set(monkeypatch):
@@ -60,3 +60,51 @@ def test_configure_mlflow_local_fallback_when_no_dagshub_configuration_is_detect
     assert tracking_uri == LOCAL_MLFLOW_URI
     mock_set_tracking_uri.assert_called_once_with(LOCAL_MLFLOW_URI)
     mock_set_experiment.assert_called_once_with(experiment_name)
+
+
+def test_log_training_run():
+    mock_trained_pipeline = object()
+    params = {
+        "model_type": "RandomForestClassifier",
+        "n_estimators": 100,
+        "random_state": 42,
+        "test_size": 0.2,
+        "target_column": "Class/ASD",
+    }
+    metrics = {
+        "accuracy": 0.9,
+        "precision": 0.85,
+        "recall": 0.8,
+        "f1": 0.82,
+        "test_samples": 100,
+        "random_state": 42,
+        "n_estimators": 100,
+        "test_size": 0.2,
+    }
+
+    fake_run = MagicMock()
+    fake_run.info.run_id = "test-run-id"
+
+    mock_start_run = MagicMock()
+    mock_start_run.__enter__.return_value = fake_run
+    mock_start_run.__exit__.return_value = None
+
+    with patch(
+        "src.tracking.mlflow_utils.mlflow.start_run",
+        return_value=mock_start_run,
+    ), patch(
+        "src.tracking.mlflow_utils.mlflow.log_params",
+    ) as mock_log_params, patch(
+        "src.tracking.mlflow_utils.mlflow.log_metrics",
+    ) as mock_log_metrics, patch(
+        "src.tracking.mlflow_utils.mlflow.sklearn.log_model",
+    ) as mock_log_model:
+        result = log_training_run(mock_trained_pipeline, params, metrics)
+
+    assert result == "test-run-id"
+    mock_log_params.assert_called_once_with(params)
+    mock_log_metrics.assert_called_once_with(metrics)
+    mock_log_model.assert_called_once_with(
+        mock_trained_pipeline,
+        artifact_path="model",
+    )
