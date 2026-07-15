@@ -49,5 +49,5 @@ def log_training_run(
     with mlflow.start_run() as run:
         mlflow.log_params(params)
         mlflow.log_metrics(metrics)
-        mlflow.sklearn.log_model(pipeline, artifact_path=artifact_path)
+        mlflow.sklearn.log_model(pipeline, name=artifact_path)
         return run.info.run_id
