@@ -84,9 +84,11 @@ autism-screening-classification/
 |- tests/
 |  |- test_data_loading.py
 |  |- test_evaluation.py
+|  |- test_metrics_artifact.py
 |  |- test_pipeline.py
 |  |- test_tracking.py
 |  |- test_train_helpers.py
+|  |- test_train_model.py
 |- .gitignore
 |- LICENSE
 |- README.md
@@ -223,8 +225,10 @@ The tests are organized by responsibility:
 - `tests/test_pipeline.py` checks the main pipeline-level behavior.
 - `tests/test_data_loading.py` checks raw data cleaning decisions such as missing values, quote/whitespace cleanup, target mapping, and unexpected target labels.
 - `tests/test_evaluation.py` checks evaluation helper contracts, including metric keys and confusion matrix values.
+- `tests/test_metrics_artifact.py` checks the saved metrics artifact contract, including evaluation, configuration, run, and timestamp metadata.
 - `tests/test_tracking.py` checks MLflow/DagsHub tracking configuration behavior without making real network calls.
-- `tests/test_train_helpers.py` checks helper functions used by `train.py`, such as filtering numeric MLflow metrics and building the metrics report.
+- `tests/test_train_helpers.py` checks helper functions used by `train.py`, including metrics filtering, artifact saving, report building, and terminal summary output.
+- `tests/test_train_model.py` checks the default RandomForest model configuration.
 
 ## Open The Notebook
 

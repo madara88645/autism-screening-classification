@@ -47,6 +47,7 @@ def test_configure_mlflow_local_fallback_when_no_dagshub_configuration_is_detect
     monkeypatch.delenv("DAGSHUB_REPO_NAME", raising=False)
     monkeypatch.delenv("DAGSHUB_USERNAME", raising=False)
     monkeypatch.delenv("DAGSHUB_TOKEN", raising=False)
+    monkeypatch.delenv("MLFLOW_ALLOW_FILE_STORE", raising=False)
 
     experiment_name = "test-experiment"
 
@@ -58,6 +59,7 @@ def test_configure_mlflow_local_fallback_when_no_dagshub_configuration_is_detect
         tracking_uri = configure_mlflow(experiment_name=experiment_name)
 
     assert tracking_uri == LOCAL_MLFLOW_URI
+    assert os.environ["MLFLOW_ALLOW_FILE_STORE"] == "true"
     mock_set_tracking_uri.assert_called_once_with(LOCAL_MLFLOW_URI)
     mock_set_experiment.assert_called_once_with(experiment_name)
 
@@ -106,5 +108,5 @@ def test_log_training_run():
     mock_log_metrics.assert_called_once_with(metrics)
     mock_log_model.assert_called_once_with(
         mock_trained_pipeline,
-        artifact_path="model",
+        name="model",
     )
